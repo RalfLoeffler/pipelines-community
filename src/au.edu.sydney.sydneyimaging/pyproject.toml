@@ -71,7 +71,7 @@ version-file = "australianimagingservice/community/au/edu/sydney/sydneyimaging/_
 packages = ["australianimagingservice"]
 
 [tool.black]
-target-version = ['py38']
+target-version = ['py310']
 exclude = "australianimagingservice/community/au/edu/sydney/sydneyimaging/_version.py"
 
 [tool.codespell]

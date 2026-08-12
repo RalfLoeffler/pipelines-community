@@ -1,0 +1,9 @@
+pydicom
+fileformats
+fileformats-medimage
+fileformats-medimage-extras
+frametree
+frametree-xnat
+pydra2app
+pydra2app-xnat
+pydra >=0.23a0

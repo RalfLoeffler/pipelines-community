@@ -6,10 +6,16 @@ build-backend = "hatchling.build"
 name = "australianimagingservice-community-au-edu-unsw-rinsw"
 description = "Community-developed pipelines at Research Imaging NSW @ The University of New South Wales to be run on the Australian Imaging Service"
 readme="README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "fileformats",
     "fileformats-medimage",
+    "fileformats-medimage-extras",
+    "pydicom",
+    "frametree",
+    "frametree-xnat",
+    "pydra2app",
+    "pydra2app-xnat",
     "pydra >=0.23a0",
     # "pydra-mrtrix3",
     # "pydra-fastsurfer",
@@ -33,10 +39,9 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
 ]
 dynamic = ["version"]
@@ -65,14 +70,14 @@ source = "vcs"
 raw-options = {root = "../.."}
 
 [tool.hatch.build.hooks.vcs]
-version-file = "australianimagingservice/community/au/edu/sydney/sydneyimaging/_version.py"
+version-file = "australianimagingservice/community/au/edu/unsw/rinsw/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["australianimagingservice"]
 
 [tool.black]
 target-version = ['py310']
-exclude = "australianimagingservice/community/au/edu/sydney/sydneyimaging/_version.py"
+exclude = "australianimagingservice/community/au/edu/unsw/rinsw/_version.py"
 
 [tool.codespell]
 ignore-words = ".codespell-ignorewords"

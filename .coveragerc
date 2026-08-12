@@ -1,0 +1,9 @@
+[run]
+branch = True
+source =
+    australianimagingservice
+
+[report]
+omit =
+    */tests/*
+    */_version.py

@@ -19,6 +19,7 @@ def test_protocolqc_spec_uses_unsw_source_entry_point():
     assert spec["commands"]["protocol-qc"]["task"] == (
         "australianimagingservice.community.au.edu.unsw.rinsw.protocol_qc.workflow:protocol_qc_task"
     )
+    assert "australianimagingservice-community-au-edu-unsw-rinsw" in spec["packages"]["pip"]
     assert "australianimagingservice" not in spec["packages"]["pip"]
 
 

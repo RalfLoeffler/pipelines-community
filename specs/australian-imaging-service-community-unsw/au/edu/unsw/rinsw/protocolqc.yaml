@@ -15,6 +15,7 @@ base_image:
   package_manager: apt
 packages:
   pip:
+    australianimagingservice-community-au-edu-unsw-rinsw:
     pydicom:
     fileformats:
     fileformats-medimage:

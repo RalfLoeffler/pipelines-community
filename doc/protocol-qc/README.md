@@ -106,6 +106,11 @@ repository during the pipeline build and is therefore not a third-party
 dependency. Test tools are listed separately in
 `requirements/quality-control/protocol-qc-test.txt`.
 
+The specification lists the UNSW distribution name
+`australianimagingservice-community-au-edu-unsw-rinsw` so Pydra2App includes
+that local source package when invoked with `--source-package`; it is copied
+from this repository rather than downloaded from PyPI.
+
 When `FailOnDeviation=true`, the workflow writes or logs the report first and
 then raises an error if the overall result is FAIL.
 

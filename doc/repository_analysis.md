@@ -1,49 +1,135 @@
 # Repository Analysis: pipelines-community
 
-## Architecture
+**Branch reviewed:** `local-qwen-task`
+**Commit baseline:** `d4b9a82` (`added scaffold files`)
 
-The repository follows a structured Python package layout with:
-- Main package: u.edu.sydney.sydneyimaging.australianimagingservice.community
-- Entry point: 	1_preproc.py (in src/au.edu.sydney.sydneyimaging/australianimagingservice/community/au/edu/sydney/sydneyimaging/t1_preproc.py)
-- Build configuration in pyproject.toml (in src/au.edu.sydney.sydneyimaging/pyproject.toml)
+## Scope and status
 
-## Entry Points
+This document describes the committed `local-qwen-task` baseline and the UNSW
+ProtocolQC pipeline contribution being staged alongside it.
 
-The primary entry point is the 	1_preproc() function in 	1_preproc.py. This file defines a workflow using Pydra for neuroimaging pipeline processing, but most of the implementation is commented out. The function includes commented-out sections for FastSurfer processing, five tissue type generation and visualization, and DK parcellation tasks.
+For scaffold-specific behavior, configuration, and limitations, see the
+[ProtocolQC scaffold README](protocol-qc/README.md).
 
-## Dependency Management
+## Repository layout
 
-- **Main dependencies**: ileformats, ileformats-medimage, pydra >=0.23a0
-- **Optional dependencies** (for development): lack, pre-commit, codespell, lake8, pytest
-- **Build system**: Uses hatchling and hatch-vcs
-- **Installation requirements**: The top-level equirements.txt specifies pydra2app-xnat >=0.6.2
+The committed repository contains a Sydney Imaging package area and an UNSW
+package/specification area:
 
-## Tests
+- Sydney Imaging package: `src/au.edu.sydney.sydneyimaging/`
+- UNSW RINSW package metadata and specifications: `src/au.edu.unsw.rinsw/` and
+  `specs/australian-imaging-service-community-unsw/`
+- Pipeline specifications: `specs/australian-imaging-service-community/` and
+  `specs/australian-imaging-service-community-unsw/`
+- Root-level tests: `tests/`
+- Maintained documentation: `doc/`
+- Generated documentation output: `docs/`
 
-The repository contains multiple test files:
-- 	ests/test_bet.py: Contains a test suite for BET (Brain Extraction Tool) functionality
-- 	ests/test_bet_spec.py: Tests the BET specification
-- 	ests/test_bootstrap.py: Tests bootstrap functionality
-- 	ests/test_build.py: Tests build processes
-- 	ests/test_docs.py: Tests documentation
-- 	ests/test_zip.py: Tests zip functionality
-- 	ests/test_zip_spec.py: Tests zip specification
+The singular `doc/` directory is the canonical location for maintained
+documentation. The plural `docs/` directory is intentionally ignored by
+`.gitignore` and is used for generated documentation artifacts.
 
-## Linting and Formatting
+## Package entry points and build configuration
 
-The project uses:
-- **Black** for code formatting (with target version py310)
-- **Flake8** for linting with specific configuration in pyproject.toml
-- **Codespell** for spell checking
-- Pre-commit hooks are configured for automated checks
+The Sydney Imaging package exposes the `t1_preproc` workflow from
+`src/au.edu.sydney.sydneyimaging/australianimagingservice/community/au/edu/sydney/sydneyimaging/t1_preproc.py`.
+Its build, dependency, test, Black, Flake8, and Codespell configuration is in
+`src/au.edu.sydney.sydneyimaging/pyproject.toml`.
 
-## Likely Risks
+The UNSW area has its own build and development configuration in
+`src/au.edu.unsw.rinsw/pyproject.toml`, with ProtocolQC source under that
+package and its canonical specification under
+`specs/australian-imaging-service-community-unsw/`. Pipeline specifications
+define Pydra2App commands and metadata under `specs/`.
 
-1. **Incomplete Implementation**: The main pipeline (	1_preproc.py) has most functionality commented out, making it non-functional as-is.
-2. **Missing Dependencies**: Several optional dependencies like pydra-mrtrix3 and pydra-fastsurfer are commented out but appear to be required for the full pipeline.
-3. **Version Compatibility**: Uses Pydra version 0.23a0 (alpha) which may have stability issues.
-4. **Missing Documentation**: No documentation beyond a README, making it difficult to understand how to use or extend the pipelines.
+## Dependency management
 
-## Summary of Findings
+The root CI/bootstrap dependency is declared in `requirements.txt`.
+Package-specific runtime and development dependencies are declared in each
+package's `pyproject.toml`. ProtocolQC also has separate runtime and test
+requirements in `requirements/quality-control/` and container dependencies in
+the canonical UNSW specification.
 
-The repository is structured as a Python package for neuroimaging pipelines but appears to be in an incomplete state with most functionality commented out. The tests exist but are not executed by default in this repository structure. The linting and formatting tools are configured but may not be run consistently.
+The ProtocolQC task is supplied by the UNSW source package, so the specification
+does not declare a third-party `australianimagingservice` dependency. Runtime
+requirements are in `requirements/quality-control/protocol-qc.txt`; pytest and
+pytest-cov are in `protocol-qc-test.txt`.
+
+## Tests and CI
+
+The repository's CI workflow is `.github/workflows/ci-cd.yml`. It installs the
+root requirements, generates documentation, tests the Sydney Imaging package
+with pytest and coverage, builds distributions, and builds pipeline
+containers. The UNSW matrix entry runs the ProtocolQC colocated unit tests and
+builds its distributions; the dedicated ProtocolQC job compiles the source and
+validates the canonical UNSW specification/resource build.
+
+The committed package test extras include pytest and pytest-cov in
+`src/au.edu.sydney.sydneyimaging/pyproject.toml` and
+`src/au.edu.unsw.rinsw/pyproject.toml`. Coverage policy is recorded in
+`codecov.yml`; the repository-level `.coveragerc` supplies the shared coverage
+configuration used by CI.
+
+Root tests are under `tests/`, including documentation generation and a
+historically named Pydra2App container-command integration test:
+`tests/test_docs.py`, `tests/test_protocolqc.py`, and the other pipeline test
+modules. `tests/test_protocolqc.py` does not exercise the local working-tree
+ProtocolQC implementation. ProtocolQC unit tests are under
+`src/au.edu.unsw.rinsw/australianimagingservice/community/au/edu/unsw/rinsw/protocol_qc/tests/`;
+the UNSW matrix and dedicated ProtocolQC job run them, while live XNAT
+integration remains deferred.
+
+### CI visibility
+
+| Area | Committed baseline | Package-test job in CI |
+| --- | --- | --- |
+| Sydney Imaging | Yes: `src/au.edu.sydney.sydneyimaging/` | Yes |
+| UNSW package/specification area | Yes: `src/au.edu.unsw.rinsw/` and `specs/australian-imaging-service-community-unsw/` | Yes |
+| UNSW ProtocolQC pipeline | Yes: UNSW package and canonical spec | UNSW matrix plus dedicated job |
+
+## Formatting, linting, and typing
+
+Black, Flake8, and Codespell are configured for the committed package areas in
+their respective `pyproject.toml` files. Pre-commit is listed as a development
+dependency, but no repository-level `.pre-commit-config.yaml` is present.
+
+No mypy, Pyright, or equivalent type-checking configuration is present. The
+ProtocolQC source uses annotations and is covered by the UNSW package's test
+extra, but no type checker is configured.
+
+## Documentation generation
+
+CI deliberately keeps generated documentation under `docs/`:
+
+- `pydra2app make-docs` writes generated pipeline documentation to
+  `docs/pipelines`: `.github/workflows/ci-cd.yml`
+- The generated HTML is staged under `docs/build/html` before deployment:
+  `.github/workflows/ci-cd.yml`
+
+These generated paths must not be renamed to `doc/`. Authored ProtocolQC
+documentation belongs under `doc/protocol-qc/README.md`.
+
+## UNSW ProtocolQC pipeline
+
+The UNSW ProtocolQC pipeline consists of:
+
+- Implementation: `src/au.edu.unsw.rinsw/australianimagingservice/community/au/edu/unsw/rinsw/protocol_qc/`
+- Specification: `specs/australian-imaging-service-community-unsw/au/edu/unsw/rinsw/protocolqc.yaml`
+- Resource: `resources/protocol-qc-template/protocol-template.json`
+- Requirements: `requirements/quality-control/protocol-qc.txt`
+- Documentation: `doc/protocol-qc/README.md`
+
+Stage these paths as one coherent pipeline contribution. The approved clinical
+template content, live XNAT integration, and DICOM/comparison parity remain
+production blockers documented in the ProtocolQC README.
+
+## Risks and follow-up
+
+- The generated-documentation workflow and authored-documentation convention
+  must remain separate: `.github/workflows/ci-cd.yml`, `.gitignore`.
+- ProtocolQC has a dedicated CI job, but its XNAT integration test remains
+  deferred: `src/au.edu.unsw.rinsw/australianimagingservice/community/au/edu/unsw/rinsw/protocol_qc/tests/test_xnat_io.py`.
+- Root tests and documentation generation depend on external Pydra2App tooling:
+  `tests/test_docs.py`, `.github/workflows/ci-cd.yml`.
+- ProtocolQC still needs an `xnat4tests` integration suite and an approved
+  clinical protocol template before production deployment.

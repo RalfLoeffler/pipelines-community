@@ -7,16 +7,17 @@ against an approved protocol template stored as a JSON resource in the built
 container image.
 
 The design is based on the supplied Flywheel ProtocolQC gear, but separates the
-platform-independent QC logic from XNAT/FrameTree access. Flywheel APIs,
-Twilio notifications, Flywheel tags, and `/flywheel/v0/output` are not part of
-this pipeline.
+platform-independent QC logic from XNAT/FrameTree access.
 
 ## Status
 
 ProtocolQC is organized as the UNSW pipeline contribution. Its canonical
 specification is `specs/australian-imaging-service-community-unsw/au/edu/unsw/rinsw/protocolqc.yaml`.
 The source package is supplied by `src/au.edu.unsw.rinsw`; stage the complete
-pipeline contribution together before release.
+pipeline contribution together before release. The current XNAT installation is
+only a proof-of-principle scaffold for Docker build and wiring validation. It
+does not yet contain validated ProtocolQC content or demonstrate functional
+XNAT QC behaviour.
 
 ProtocolQC is included in the UNSW package-test matrix and also has focused
 pipeline validation in `.github/workflows/ci-cd.yml`. CI installs the UNSW

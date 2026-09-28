@@ -2,14 +2,9 @@
 
 ## Scope and source of truth
 
-- [ ] Confirm that `D:\repos\RINSW_flywheel\gears\protocolqc` is the intended
-  Flywheel source repository. The path originally supplied without the
-  underscore (`D:\repos\RINSW\...`) does not exist in this workspace.
 - [ ] Preserve the XNAT design already established in this repository: a
   session-level Pydra2App command, a consolidated JSON report, and FrameTree
-  read/write access. Do not reproduce Flywheel tags, SMS notifications, or
-  per-acquisition output files unless those are separately approved XNAT
-  requirements.
+  read/write access.
 - [ ] Treat the existing XNAT scaffold as the target implementation:
   `src/au.edu.unsw.rinsw/australianimagingservice/community/au/edu/unsw/rinsw/protocol_qc/`,
   with the canonical command specification at
@@ -35,6 +30,10 @@
 - [ ] Define the governed template workflow: approval owner, version,
   checksum, release process, and whether templates remain image-packaged or
   become a controlled XNAT project resource.
+- [ ] Provide and test a supported facility to create a protocol-template JSON
+  file from an approved, de-identified reference acquisition or XNAT session.
+  Define its inputs, generated schema, validation, provenance, and approval
+  handoff before making it available to users.
 
 ## 2. Prepare safe parity fixtures
 
@@ -100,10 +99,21 @@
   `/opt/protocol-qc-template/protocol-template.json`, parameter mapping,
   stdout summary, report visibility, and command-history behaviour.
 
-## 6. Release readiness
+## 6. Deferred platform integrations
+
+- [ ] Define deferred platform behaviour for SMS messaging, session tagging,
+  and per-acquisition QC output files: triggers, destinations, permissions,
+  retention, failure handling, privacy, and the XNAT equivalents (if any).
+- [ ] Implement these integrations only after their requirements, privacy
+  posture, XNAT data model, and operational ownership are approved.
+
+## 7. Release readiness
 
 - [ ] Replace `resources/protocol-qc-template/protocol-template.json` only
   after an approved production template is available.
+- [ ] Replace the proof-of-principle XNAT/Docker scaffold with validated
+  ProtocolQC content before representing the pipeline as functionally
+  implemented or production-ready.
 - [ ] Run the focused ProtocolQC suite, the CI-equivalent coverage/spec checks,
   the broader UNSW package matrix, and the generated-container build.
 - [ ] Validate a controlled, de-identified, production-like XNAT session across

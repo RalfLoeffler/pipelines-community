@@ -22,6 +22,33 @@ env:
   
 jobs:
 
+  release-preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      validated: ${{ steps.preflight.outputs.validated }}
+      version: ${{ steps.preflight.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Validate release or tag execution
+      id: preflight
+      env:
+        RELEASE_TAG: ${{ github.event.release.tag_name }}
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = "release" ]; then
+          RELEASE_TAG="$RELEASE_TAG"
+        elif [ "$GITHUB_REF_TYPE" = "tag" ]; then
+          RELEASE_TAG="$GITHUB_REF_NAME"
+        else
+          echo "validated=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        VERSION="$(python3 scripts/release_preflight.py --tag "$RELEASE_TAG")"
+        echo "validated=true" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
   build-docs:
     runs-on: ubuntu-20.04
     steps:
@@ -57,7 +84,7 @@ jobs:
           path: docs/build/html
 
   python:
-    needs: ["build-docs"]
+    needs: [build-docs, release-preflight]
     strategy:
       matrix:
         subpackage:
@@ -90,7 +117,7 @@ jobs:
     - name: Pytest
       run: >
         pytest -vvs --cov australianimagingservice.community.${{ matrix.subpackage }}
-        --cov-report xml ./src/${{ matrix.subpackage }}
+        --cov-report xml tests/test_versioning_policy.py ./src/${{ matrix.subpackage }}
     - name: Install build tools
       run: python3 -m pip install build twine
     - name: Build source and wheel distributions
@@ -106,7 +133,7 @@ jobs:
         echo "PYPI_VERSION=$(curl -s "${PYPI_URL}/${PKG_NAME}/" | grep -oP "${PKG_NAME}-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)" | sort -V | tail -n 1)" >> $GITHUB_ENV
     - name: Check for PyPI token on tag
       id: deployable
-      if: github.event_name == 'release'
+      if: github.event_name == 'release' && needs.release-preflight.outputs.validated == 'true'
       env:
         PYPI_API_TOKEN: "${{ secrets.PYPI_API_TOKEN }}"
       run: if [ -n "$PYPI_API_TOKEN" ] && [ "$PKG_VERSION" != "$PYPI_VERSION" ]; then echo "DEPLOY=true" >> $GITHUB_OUTPUT; fi
@@ -135,7 +162,7 @@ jobs:
         exit 1
             
   pipelines:
-    needs: [python]
+    needs: [python, release-preflight]
     runs-on: ubuntu-latest
     steps:
     - name: Remove unnecessary tools to free space
@@ -144,10 +171,6 @@ jobs:
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Get release tag
-      run: |
-        git fetch --prune --unshallow
-        echo "VERSION=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
     - name: Unset header
       # checkout@v2 adds a header that makes branch protection report errors
       # because the Github action bot is not a collaborator on the repo
@@ -161,23 +184,20 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
     - uses: docker/login-action@v2
+      if: github.event_name == 'release' && needs.release-preflight.outputs.validated == 'true'
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }} # - must be in GitHub Secrets!
-    - name: Check for tagged release
-      if: github.event_name == 'release'
-      run: echo "RELEASE=1" >> $GITHUB_ENV
     - name: Build and push container images
+      if: github.event_name == 'release' && needs.release-preflight.outputs.validated == 'true'
+      env:
+        VERSION: ${{ needs.release-preflight.outputs.version }}
       run: |
-        if [ -z "$RELEASE" ]; then
-          OPTIONS=--push
-        else
-          OPTIONS=--use-local-packages
-          for pkg in ./src/*; do 
-            pip install -e "$pkg"
-          done
-        fi
+        OPTIONS=--use-local-packages
+        for pkg in ./src/*; do
+          pip install -e "$pkg"
+        done
         pydra2app make xnat specs/australian-imaging-service-community \
         --registry ghcr.io --check-registry --clean-up --tag-latest --loglevel info \
         --release pipelines-community-metapackage $VERSION $OPTIONS
@@ -218,7 +238,7 @@ jobs:
           --dont-check-registry --source-package ./src/au.edu.unsw.rinsw
 
   deploy-docs:
-    needs: [build-docs, pipelines]
+    needs: [build-docs, pipelines, release-preflight]
     runs-on: ubuntu-latest
     steps:
     - name: Download built docs
@@ -230,7 +250,7 @@ jobs:
       run: sed -i 's%^/docs/pipelines/\*$%%' .gitignore            
     - name: Check for GHPAGES_DEPLOY_KEY token on tag
       id: deployable
-      if: github.event_name == 'release'
+      if: github.event_name == 'release' && needs.release-preflight.outputs.validated == 'true'
       env:
         GHPAGES_DEPLOY_KEY: "${{ secrets.GHPAGES_DEPLOY_KEY }}"
       run: if [ -n "$GHPAGES_DEPLOY_KEY" ]; then echo "DEPLOY=true" >> $GITHUB_OUTPUT; fi

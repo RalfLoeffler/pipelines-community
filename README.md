@@ -18,6 +18,8 @@ included in the static version of the tutorial.
 
 - [Repository analysis](doc/repository_analysis.md) explains the committed
   package, specification, test, CI, and documentation layout.
+- [Versioning policy](doc/versioning.md) defines the root coordinated-release
+  version and its relationship to package and pipeline versions.
 - [ProtocolQC](doc/protocol-qc/README.md) documents the UNSW pipeline,
   its configuration, and its current production limitations.
 - [VS Code setup](README_VSCode.md) covers the Mamba environment, workspace

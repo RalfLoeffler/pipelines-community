@@ -2,6 +2,8 @@
 
 ## Scope and source of truth
 
+- Completed work belongs in `CHANGELOG.md` and is removed from this active
+  TODO list; keep this document limited to outstanding work.
 - [ ] Preserve the XNAT design already established in this repository: a
   session-level Pydra2App command, a consolidated JSON report, and FrameTree
   read/write access.
